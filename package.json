@@ -1,0 +1,26 @@
+{
+  "name": "httpmcp",
+  "version": "0.0.1",
+  "description": "MCP using http (streamable) transport to connect to our minimal fastify bank api ",
+  "keywords": [
+    "MCP",
+    "MCP",
+    "CLIENT",
+    "AI",
+    "AGENT"
+  ],
+  "homepage": "https://github.com/Colin-Stark/bank_api_mcp#readme",
+  "bugs": {
+    "url": "https://github.com/Colin-Stark/bank_api_mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Colin-Stark/bank_api_mcp.git"
+  },
+  "author": "COLLINS OLOKPEDJE",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
