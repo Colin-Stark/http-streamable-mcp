@@ -18,9 +18,17 @@
     "url": "git+https://github.com/Colin-Stark/bank_api_mcp.git"
   },
   "author": "COLLINS OLOKPEDJE",
-  "type": "commonjs",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "inspect": "npx @modelcontextprotocol/inspector --server-url http://127.0.0.1:3000/mcp --transport http"
+  },
+  "dependencies": {
+    "@hono/mcp": "^0.3.2",
+    "@hono/node-server": "^2.1.4",
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "hono": "^4.13.13",
+    "zod": "^4.6.5"
   }
 }
