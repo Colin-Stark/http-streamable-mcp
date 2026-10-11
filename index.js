@@ -70,6 +70,13 @@ app.all("/mcp", async (c) => {
     return response;
 });
 
-serve({ fetch: app.fetch, port: 3000, hostname: "127.0.0.1" }, (info) =>
-    console.log(`MCP server on http://127.0.0.1:${info.port}/mcp`)
-);
+// Local development only: Vercel provides its own server and sets VERCEL=1,
+// so we must not start one there.
+if (!process.env.VERCEL) {
+    serve({ fetch: app.fetch, port: 3000, hostname: "127.0.0.1" }, (info) =>
+        console.log(`MCP server on http://127.0.0.1:${info.port}/mcp`)
+    );
+}
+
+// Vercel looks for this default export and runs it as a function.
+export default app;
