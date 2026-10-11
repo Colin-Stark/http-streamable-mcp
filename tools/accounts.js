@@ -29,4 +29,29 @@ export function registerAccountTools(server, { sessionId }) {
             }
         }
     );
+
+    // ---- create_account --------------------------------------------------------
+    server.registerTool(
+        "create_account",
+        {
+            title: "Create Account",
+            description: "Create a new bank account. You must log in first.",
+            inputSchema: z.object({
+                account_type: z.enum(["checking", "savings", "credit"]),
+            }),
+        },
+        async ({ account_type }) => {
+            try {
+                const account = await callProtected(sessionId, "/accounts", {
+                    method: "POST",
+                    body: { account_type }
+                });
+                return textResult(
+                    `Account created successfully:\n- ID: ${account.id}\n- Type: ${account.account_type}\n- Balance: ${account.balance}\n- Created at: ${account.created_at}`
+                );
+            } catch (err) {
+                return errorResult(err.message);
+            }
+        }
+    );
 }
