@@ -1,16 +1,15 @@
 // =============================================================================
-// tools/auth.js: login and logout (they read and write the session in Redis)
+// tools/auth.js: login and logout
 // =============================================================================
-import { randomBytes, createCipheriv } from "node:crypto"; // used to encrypt the JWT
 import { z } from "zod";
-import { BASE_URL, redis } from "../config.js";
+import { BASE_URL } from "../config.js";
+import { textResult, errorResult } from "../lib/results.js";
+import { requireSession, saveToken, deleteToken } from "../lib/session.js";
+import { errorReason } from "../lib/bank.js";
 
-// `{ sessionId }` is the context index.js passes in: the ID of the calling client.
-// The tools below use it to find this client's entry in Redis.
+// `{ sessionId }` is the context from index.js: which client is calling.
 export function registerAuthTools(server, { sessionId }) {
-    // -------------------------------------------------------------------------
-    // TOOL: login. Gets a JWT from the bank API, encrypts it, saves it in Redis.
-    // -------------------------------------------------------------------------
+    // ---- login -----------------------------------------------------------------
     server.registerTool(
         "login",
         {
@@ -23,13 +22,8 @@ export function registerAuthTools(server, { sessionId }) {
         },
         async ({ emailOrUsername, password }) => {
             try {
-                // No session ID = we can't tell who to save the login for.
-                if (!sessionId) {
-                    return {
-                        isError: true,
-                        content: [{ type: "text", text: "Your MCP client did not send a session ID, so login cannot be remembered." }],
-                    };
-                }
+                // No session ID = we couldn't remember the login, so stop before calling the API.
+                requireSession(sessionId);
 
                 // 1. Ask the bank API to authenticate (public endpoint).
                 const res = await fetch(`${BASE_URL}/user/login`, {
@@ -39,59 +33,29 @@ export function registerAuthTools(server, { sessionId }) {
                     signal: AbortSignal.timeout(10_000),
                 });
 
-                // 2. If it refused, report why (never echo the password back).
+                // 2. If it refused, report why (the password is never echoed back).
                 if (!res.ok) {
-                    let reason = "";
-                    try {
-                        const errorData = await res.json();
-                        reason = errorData.error || errorData.details || "";
-                    } catch (_) {
-                        // ignore
-                    }
-                    return {
-                        isError: true,
-                        content: [{ type: "text", text: `Login failed (HTTP ${res.status}): ${reason}` }],
-                    };
+                    return errorResult(`Login failed (HTTP ${res.status}): ${await errorReason(res)}`);
                 }
 
                 // 3. Success: { accessToken, user: { id, username, email } }
                 const data = await res.json();
-                const jwt = data.accessToken;
-                if (!jwt) {
-                    return {
-                        isError: true,
-                        content: [{ type: "text", text: "Login succeeded but the API returned no access token." }],
-                    };
+                if (!data.accessToken) {
+                    return errorResult("Login succeeded but the API returned no access token.");
                 }
 
-                // 4. ENCRYPT the JWT (AES-256-GCM) so the database never holds a usable token.
-                const key = Buffer.from(process.env.TOKEN_ENCRYPTION_KEY, "hex"); // 32-byte secret key from the environment
-                const iv = randomBytes(12);                                        // new random value for every encryption
-                const cipher = createCipheriv("aes-256-gcm", key, iv);
-                const encrypted = Buffer.concat([cipher.update(jwt, "utf8"), cipher.final()]);
-                const authTag = cipher.getAuthTag();                               // tamper-detection seal
-                // Save iv, authTag and the encrypted data together as one text value.
-                const stored = [iv, authTag, encrypted].map((part) => part.toString("base64")).join(".");
+                // 4. Encrypt and save the token in Redis for this session.
+                await saveToken(sessionId, data.accessToken);
 
-                // 5. Save in Redis. { ex: 3600 } = Redis deletes it automatically after 1 hour.
-                await redis.set(`session:${sessionId}`, stored, { ex: 3600 });
-
-                // 6. Confirm WITHOUT showing the token.
-                return {
-                    content: [{ type: "text", text: `Logged in as ${data.user?.username ?? emailOrUsername}. Session valid for 1 hour.` }],
-                };
+                // 5. Confirm WITHOUT showing the token.
+                return textResult(`Logged in as ${data.user?.username ?? emailOrUsername}. Session valid for 1 hour.`);
             } catch (err) {
-                return {
-                    isError: true,
-                    content: [{ type: "text", text: `Login error: ${err.message}` }],
-                };
+                return errorResult(`Login error: ${err.message}`);
             }
         }
     );
 
-    // -------------------------------------------------------------------------
-    // TOOL: logout. Deletes this session's token from Redis.
-    // -------------------------------------------------------------------------
+    // ---- logout ----------------------------------------------------------------
     server.registerTool(
         "logout",
         {
@@ -100,13 +64,10 @@ export function registerAuthTools(server, { sessionId }) {
         },
         async () => {
             try {
-                if (sessionId) await redis.del(`session:${sessionId}`);
-                return { content: [{ type: "text", text: "Logged out." }] };
+                await deleteToken(sessionId);
+                return textResult("Logged out.");
             } catch (err) {
-                return {
-                    isError: true,
-                    content: [{ type: "text", text: `Logout error: ${err.message}` }],
-                };
+                return errorResult(`Logout error: ${err.message}`);
             }
         }
     );
