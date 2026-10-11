@@ -22,6 +22,24 @@ You can connect to this endpoint using any MCP client that supports streamable H
 
 ## Usage
 
+<img width="1069" height="907" alt="Screenshot 2026-10-11 155646" src="https://github.com/user-attachments/assets/367f7c21-c093-474a-b982-b95309b8acce" />
+
+<img width="695" height="529" alt="Screenshot 2026-10-11 160540" src="https://github.com/user-attachments/assets/9d4a15fd-2990-4c58-bc85-bc8c48ea322f" />
+
+<img width="1118" height="874" alt="Screenshot 2026-10-11 160551" src="https://github.com/user-attachments/assets/4f0b2a2f-db22-447c-b7d9-1a7e143c9928" />
+
+<img width="1127" height="856" alt="Screenshot 2026-10-11 155235" src="https://github.com/user-attachments/assets/c80ccb63-c2ea-4a6d-b284-625acc6f1d36" />
+
+<img width="1049" height="829" alt="Screenshot 2026-10-11 155625" src="https://github.com/user-attachments/assets/48e7ea90-7472-4550-abbb-bf7a1b677b4e" />
+
+<img width="908" height="833" alt="Screenshot 2026-10-11 155358" src="https://github.com/user-attachments/assets/9362fcbe-1862-4131-90bf-17da1139f96a" />
+
+<img width="1861" height="950" alt="Screenshot 2026-10-11 155500" src="https://github.com/user-attachments/assets/a6413d7b-e9ca-4abe-8822-3caccdf79c4f" />
+
+
+
+
+
 To use this MCP server with MCP-compatible clients like Claude Desktop, Claude Code, or GitHub Copilot Chat, configure the client to connect to the streamable HTTP endpoint.
 
 ### Using with Claude Desktop / Claude Code
