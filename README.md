@@ -1,5 +1,8 @@
 # Fastify to MCP Bank Server
 
+https://github.com/user-attachments/assets/fa39e3c5-d2bd-4e6e-90ec-c5fa0a1d6c75
+
+
 An MCP (Model Context Protocol) server that interfaces with a bank API, providing tools for account management, transactions, and authentication.
 
 ## Overview
